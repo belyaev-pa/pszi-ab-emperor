@@ -12,9 +12,6 @@ class ABSocketListener(BaseDB):
     def __init__(self, conf_dict):
         """
         Конструктор обработчика заданий
-        TODO: доделать ветку возврата после сбоя
-        TODO: сделать создание pid файла и запись pid процесса в файл
-        TODO: добавить + os.remove(JOB_HANDLER_PID_FILE_PATH)
         :param job_id: id задачи из БД, которую нужно выполнить
         :param conf_dict: словарь с настройками
         :param arguments: список аргументов, файлы и пути к ним: ['log_txt_file=/home/pavel/test_log.txt']
@@ -50,11 +47,20 @@ class ABSocketListener(BaseDB):
         """
         while True:
             self.socket_conn, self.client_address = self.sock.accept()
+            received_data = ''
             while True:
-                data = self.socket_conn.recv(1024)
-
-                if not data:
-                    conf = json.loads(data)
-                    with JobHandler(conf['job_id'], self.conf_dict) as job:
-                        job.run_job()
+                data = self.socket_conn.recv(128)
+                received_data += data.decode('utf8').replace("'", '"')
+                if received_data.endswith('\r\n\r\n'):
+                    conf = json.loads(received_data)
+                        # если задача есть в БД, пытаемся отдать файл логов с таким айди,
+                        # если есть, если нет файла просто говорим, что задача выполнена
+                    if self.select_db_row('job_id', conf['job_id']):
+                        # TODO: проверить, если файл лога
+                        pass
+                        # TODO: сделать ответ, что задача уже выполнена
+                    else:
+                        with JobHandler(conf['job_id'], self.conf_dict) as job:
+                            job.run_job()
+                        # TODO: ответить лог файлом
                     break
