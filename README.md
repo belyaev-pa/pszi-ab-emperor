@@ -13,6 +13,7 @@ Usage
 Requirements
 -------------
     python_sz_daemon 
+    rabbit_tools
     
     
 Required settings 
