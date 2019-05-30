@@ -6,6 +6,10 @@ import errno
 from job_handler import JobHandler, BaseDB
 
 
+
+"""
+Код был использован для ручного тестирвоания функционала
+"""
 LOG_NAME = 'ab_log'
 SQLLITE_PATH = 'ab.sqlite3'
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S.%f'

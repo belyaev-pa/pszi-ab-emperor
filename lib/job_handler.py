@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
 import json
 import subprocess
 import re
@@ -36,14 +35,14 @@ class JobHandler(BaseDB):
         """
         self.job_id = job_id
         super(JobHandler, self).__init__(conf_dict)
-        self.log_file_path = os.path.join(self.get_settings('LOG_FILES_DIR'), self.job_id+'.log')
+        self.log_file_path = os.path.join(self.get_settings('log_files_dir'), self.job_id+'.log')
         self.log_file = open(self.log_file_path, 'a')
-        syslog.openlog(self.get_settings('LOG_NAME'))
+        syslog.openlog(self.get_settings('log_name'))
         self.job_handling_error = self.get_job_handling_error
         self.job_type = self.get_job_type
         self.job_files = self.make_job_files_dict()
         self.completed_step = self.get_completed_steps()
-        with open(self.get_settings('JOB_JSON_CONF_PATH')) as conf:
+        with open(self.get_settings('job_json_conf_path')) as conf:
             json_conf = json.load(conf)
             self.job = json_conf.get(self.job_type, None)
             key = self.job.get('job', None).get('handling', None)
@@ -97,7 +96,7 @@ class JobHandler(BaseDB):
         else:
             self.update_db_column('status', 0, 'job_id', self.job_id)
             self.update_db_column('date_finish',
-                                  datetime.now().strftime(self.get_settings('DATE_FORMAT')),
+                                  datetime.now().strftime(self.get_settings('date_format')),
                                   'job_id',
                                   self.job_id)
             msg = "Задача '{}' выполнена успешно\n".format(self.job_id)
@@ -188,7 +187,7 @@ class JobHandler(BaseDB):
     def make_system_reverse(self):
         msg = "пытаемся восстановить систему {0}\n".format(datetime.now())
         self.write_log(msg)
-        with open(self.get_settings('JOB_JSON_CONF_PATH')) as conf:
+        with open(self.get_settings('job_json_conf_path')) as conf:
             json_conf = json.load(conf)
             recovery_job = json_conf.get(self.job_type, None)
             key = self.job.get('error', None).get('handling', None)
@@ -222,7 +221,7 @@ class JobHandler(BaseDB):
             self.write_log(msg)
         self.update_db_column('status', 0, 'job_id', self.job_id)
         self.update_db_column('date_finish',
-                              datetime.now().strftime(self.get_settings('DATE_FORMAT')),
+                              datetime.now().strftime(self.get_settings('date_format')),
                               'job_id',
                               self.job_id)
 

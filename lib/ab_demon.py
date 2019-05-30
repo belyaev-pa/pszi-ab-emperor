@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
-from .lib.daemon import DaemonConfigurator, UnsupportedCommandException
+import sys
+from python_sz_daemon.daemon_configurator  import DaemonConfigurator
 from ab_base_daemon import ABBaseDaemon
+from rabbit_tools.sender import parse_conf
+
+
+CONFIG_PATH = '/etc/pszi_ab_emperor/ab_emperor.conf'
 
 
 def create_daemon(command, conf_dict):
@@ -10,12 +15,22 @@ def create_daemon(command, conf_dict):
     :param conf_dict: словарь с настройками
     :return: void
     """
-    daemon = ABBaseDaemon(pidfile=conf_dict['PID_FILE_PATH'],
+    daemon = ABBaseDaemon(pidfile=conf_dict['pid_file_path'],
                           conf_dict=conf_dict,
-                          log_name=conf_dict['LOG_NAME'])
+                          log_name=conf_dict['log_name'])
     config = DaemonConfigurator(daemon)
     react_dict = config.get_reacts_for_daemon()
     try:
         react_dict[command]()
     except KeyError as e:
-        raise UnsupportedCommandException(e)
+        raise KeyError('Such "{}" command can not be found'.format(command))
+
+
+if __name__ == '__main__':
+    conf = parse_conf(CONFIG_PATH)
+    if len(sys.argv) > 1:
+        create_daemon(sys.argv[1], conf)
+        sys.exit(0)
+    else:
+        print("Usage {} without arguments is prohibited".format(sys.argv[0]))
+        sys.exit(2)

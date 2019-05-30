@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import json
+import os
 import socket
+from datetime import datetime
 from base_db import BaseDB
 from job_handler import SingletonMeta, JobHandler
+from collections import namedtuple
 
 
 class ABSocketListener(BaseDB):
@@ -19,7 +22,7 @@ class ABSocketListener(BaseDB):
         """
         self.conf_dict = conf_dict
         super(ABSocketListener, self).__init__(self.conf_dict)
-        self.socket_path = self.get_settings('SOCKET_PATH')
+        self.socket_path = self.get_settings('socket_path')
         self.init_check()
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.sock.bind(self.socket_path)
@@ -35,7 +38,7 @@ class ABSocketListener(BaseDB):
         Проверяет незавершенные работы при инициализации
         :return:
         """
-        rows = self.select_db_row("status", "processing")
+        rows = self.select_db_row("status", 1)
         if rows:
             for row in rows:
                 with JobHandler(row['job_id'], self.conf_dict) as job:
@@ -55,12 +58,45 @@ class ABSocketListener(BaseDB):
                     conf = json.loads(received_data)
                         # если задача есть в БД, пытаемся отдать файл логов с таким айди,
                         # если есть, если нет файла просто говорим, что задача выполнена
+                    log_path = os.path.join(self.get_settings('log_files_dir'), conf['job_id'] + '.log')
                     if self.select_db_row('job_id', conf['job_id']):
-                        # TODO: проверить, если файл лога
-                        pass
-                        # TODO: сделать ответ, что задача уже выполнена
+                        if os.path.isfile(log_path):
+                            self.socket_conn.sendall(log_path + '\r\n\r\n')
+                        else:
+                            self.socket_conn.sendall('\r\n\r\n')
                     else:
-                        with JobHandler(conf['job_id'], self.conf_dict) as job:
-                            job.run_job()
-                        # TODO: ответить лог файлом
+                        self.prepare_job(conf)
+                        self.socket_conn.sendall(log_path + '\r\n\r\n')
                     break
+
+    def prepare_job(self, conf):
+        """
+        функция подготовки к запуску задачи
+        :param conf:
+        :return:
+        """
+        DBRow = namedtuple('DBRow', [
+            'job_id',
+            'status',
+            'error',
+            'step_number',
+            'arguments',
+            'task_type',
+            'manager_type',
+            'completed_steps',
+            'date_start',
+            'date_finish'
+        ])
+        db_row = DBRow(job_id=conf['job_id'],
+                       status=1,
+                       error=0,
+                       step_number='step_1',
+                       arguments=' '.join(map(str, conf['arguments'])),
+                       task_type=conf['task_type'],
+                       manager_type=conf['manager_type'],
+                       completed_steps='',
+                       date_start=datetime.now().strftime(self.get_settings('date_format')),
+                       date_finish='',)
+        self.insert_into_table(db_row)
+        with JobHandler(conf['job_id'], self.conf_dict) as job:
+            job.run_job()

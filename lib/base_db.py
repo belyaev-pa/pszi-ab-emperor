@@ -2,7 +2,6 @@
 import sqlite3
 import syslog
 import sys
-import os
 from datetime import datetime
 
 
@@ -26,9 +25,9 @@ class BaseDB(object):
         :param conf_dict:
         """
         self.conf_dict = conf_dict
-        syslog.openlog(self.get_settings('LOG_NAME'))
+        syslog.openlog(self.get_settings('log_name'))
         try:
-            self.conn = sqlite3.connect(self.get_settings('DB_PATH'))
+            self.conn = sqlite3.connect(self.get_settings('sqllite3_db_path'))
         except sqlite3.Error as e:
             syslog.syslog(syslog.LOG_INFO, '{} can`t connect to DB...{}'.format(datetime.now(), e))
             sys.exit('can`t connect to DB...')
