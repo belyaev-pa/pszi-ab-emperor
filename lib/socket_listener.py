@@ -99,5 +99,5 @@ class ABSocketListener(BaseDB):
                        date_start=datetime.now().strftime(self.get_settings('date_format')),
                        date_finish='',)
         self.insert_into_table(db_row)
-        with JobHandler(conf['job_id'], self.conf_dict) as job:
+        with JobHandler(sock_msg['job_id'], self.conf_dict) as job:
             job.run_job()
