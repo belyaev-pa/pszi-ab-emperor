@@ -3,9 +3,10 @@ import json
 import os
 import socket
 from datetime import datetime
+from collections import namedtuple
+
 from base_db import BaseDB
 from job_handler import SingletonMeta, JobHandler
-from collections import namedtuple
 
 
 class ABSocketListener(BaseDB):
@@ -69,10 +70,10 @@ class ABSocketListener(BaseDB):
                         self.socket_conn.sendall(log_path + '\r\n\r\n')
                     break
 
-    def prepare_job(self, conf):
+    def prepare_job(self, sock_msg):
         """
         функция подготовки к запуску задачи
-        :param conf:
+        :param sock_msg: словарь с необходимыми параметрыми, передаваемым через сокет
         :return:
         """
         DBRow = namedtuple('DBRow', [
@@ -87,13 +88,13 @@ class ABSocketListener(BaseDB):
             'date_start',
             'date_finish'
         ])
-        db_row = DBRow(job_id=conf['job_id'],
+        db_row = DBRow(job_id=sock_msg['job_id'],
                        status=1,
                        error=0,
                        step_number='step_1',
-                       arguments=' '.join(map(str, conf['arguments'])),
-                       task_type=conf['task_type'],
-                       manager_type=conf['manager_type'],
+                       arguments=' '.join(map(str, sock_msg['arguments'])),
+                       task_type=sock_msg['task_type'],
+                       manager_type=sock_msg['manager_type'],
                        completed_steps='',
                        date_start=datetime.now().strftime(self.get_settings('date_format')),
                        date_finish='',)

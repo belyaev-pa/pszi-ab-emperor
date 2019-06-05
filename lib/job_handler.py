@@ -5,8 +5,9 @@ import subprocess
 import re
 import syslog
 from datetime import datetime
-from base_db import BaseDB
 from collections import OrderedDict
+
+from base_db import BaseDB
 
 
 class SingletonMeta(type):
@@ -224,6 +225,7 @@ class JobHandler(BaseDB):
                               datetime.now().strftime(self.get_settings('date_format')),
                               'job_id',
                               self.job_id)
+        return self.log_file_path
 
 
 class WrongJsonFormatException(Exception):

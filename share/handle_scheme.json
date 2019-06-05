@@ -3,7 +3,7 @@
     "job":{
       "files": {
         "count": "int",
-        "names": ["my_file1, my_file2", "my_file3"]
+        "names": ["my_file1", "my_file2", "my_file3"]
       },
       "handling": [
         ["step_1", "полная консольная команда *my_file1* *my_file2*"],

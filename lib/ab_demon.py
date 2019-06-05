@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+
 from python_sz_daemon.daemon_configurator  import DaemonConfigurator
 from ab_base_daemon import ABBaseDaemon
 from rabbit_tools.sender import parse_conf
