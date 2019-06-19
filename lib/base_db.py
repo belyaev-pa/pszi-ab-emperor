@@ -27,7 +27,7 @@ class BaseDB(object):
         self.conf_dict = conf_dict
         syslog.openlog(self.get_settings('log_name'))
         try:
-            self.conn = sqlite3.connect(self.get_settings('sqllite3_db_path'))
+            self.conn = sqlite3.connect(self.get_settings('sqlite3_db_path'))
         except sqlite3.Error as e:
             syslog.syslog(syslog.LOG_INFO, '{} can`t connect to DB...{}'.format(datetime.now(), e))
             sys.exit('can`t connect to DB...')
