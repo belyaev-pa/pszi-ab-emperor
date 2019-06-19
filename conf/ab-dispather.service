@@ -1,0 +1,16 @@
+[Unit]
+Description=Диспетчер Агента Безопасности
+
+[Service]
+Type=idle
+User=root
+PIDFile=/var/run/ab_daemon.pid
+
+ExecStart=/usr/sbin/ab-dispather start
+ExecStop=/usr/sbin/ab-dispather stop
+Restart=always
+TimeoutStartSec=10
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

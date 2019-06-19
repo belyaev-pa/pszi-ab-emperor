@@ -19,11 +19,15 @@ Requires:	python-sz-daemon
 %setup -n %{name} -q
 
 %install
-mkdir -p %{buildroot}/%{python_sitelib}/pszi_ab_dispather/
-cp -r ./lib/* %{buildroot}/%{python_sitelib}/pszi_ab_dispather/
+mkdir -p %{buildroot}/%{python_sitelib}/ab_dispather/
+cp -r ./lib/* %{buildroot}/%{python_sitelib}/ab_dispather/
 
 mkdir -p %{buildroot}/etc/ab-dispather/
-cp -r ./conf/* %{buildroot}/etc/ab-dispather/
+cp    ./conf/ab-dispather.conf  %{buildroot}/etc/ab-dispather/
+cp    ./conf/handle_scheme.json %{buildroot}/etc/ab-dispather/
+
+mkdir -p %{buildroot}/etc/systemd/system/
+cp    ./conf/ab-dispather.service %{buildroot}/etc/systemd/system/
 
 mkdir -p %{buildroot}/usr/sbin/
 cp -r ./sbin/ab_demon.py %{buildroot}/usr/sbin/ab-dispather
@@ -39,17 +43,23 @@ mkdir -p %{buildroot}/var/log/ab-dispather/
 rm -rf %{buildroot}
 
 %post
+echo "Применение файлов из пакета"
+/bin/systemctl daemon-reload
+/bin/systemctl enable ab-dispather.service
 
 %files
 %defattr(644,root,root,-)
-%{python_sitelib}/pszi_ab_dispather/ab_base_daemon.py
-%{python_sitelib}/pszi_ab_dispather/base_db.py
-%{python_sitelib}/pszi_ab_dispather/__init__.py
-%{python_sitelib}/pszi_ab_dispather/job_handler.py
-%{python_sitelib}/pszi_ab_dispather/socket_listener.py
+%{python_sitelib}/ab_dispather/ab_base_daemon.py
+%{python_sitelib}/ab_dispather/base_db.py
+%{python_sitelib}/ab_dispather/__init__.py
+%{python_sitelib}/ab_dispather/job_handler.py
+%{python_sitelib}/ab_dispather/socket_listener.py
+%{python_sitelib}/ab_dispather/parse_conf.py
 
 /etc/ab-dispather/ab-dispather.conf
 /etc/ab-dispather/handle_scheme.json
+
+/etc/systemd/system/ab-dispather.service
 
 %defattr(750,root,root,-)
 /usr/sbin/ab-dispather
@@ -58,8 +68,8 @@ rm -rf %{buildroot}
 %dir /var/lib/ab-dispather/
 %dir /var/log/ab-dispather/
 
-%exclude %{python_sitelib}/pszi_ab_dispather/*.pyc
-%exclude %{python_sitelib}/pszi_ab_dispather/*.pyo
+%exclude %{python_sitelib}/ab_dispather/*.pyc
+%exclude %{python_sitelib}/ab_dispather/*.pyo
 
 %doc
 
