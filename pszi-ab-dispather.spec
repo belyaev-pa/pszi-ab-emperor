@@ -7,27 +7,27 @@ License: 	commercial
 URL:		http://www.fintech.ru
 Source0:	%{name}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
-Requires:	python_sz_daemon
+Requires:	python-sz-daemon
 
 #%global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib;")
 %global python_sitelib /usr/lib/python2.7/site-packages
 
 %description
-Диспетчер Агента Безопасности
+Диспетчер Агента Безопасности + модуль консольного управления
 
 %prep
-
 %setup -n %{name} -q
 
 %install
 mkdir -p %{buildroot}/%{python_sitelib}/pszi_ab_dispather/
 cp -r ./lib/* %{buildroot}/%{python_sitelib}/pszi_ab_dispather/
 
-mkdir -p %{buildroot}/usr/share/pszi_ab_dispather/
-cp -r ./share/* %{buildroot}/usr/share/pszi_ab_dispather/
+mkdir -p %{buildroot}/etc/ab-dispather/
+cp -r ./conf/* %{buildroot}/etc/ab-dispather/
 
 mkdir -p %{buildroot}/usr/sbin/
-cp -r ./sbin/* %{buildroot}/usr/sbin/
+cp -r ./sbin/ab_demon.py %{buildroot}/usr/sbin/ab-dispather
+cp -r ./sbin/console_util.py %{buildroot}/usr/sbin/ab-console
 
 %clean
 rm -rf %{buildroot}
@@ -42,10 +42,12 @@ rm -rf %{buildroot}
 %{python_sitelib}/pszi_ab_dispather/job_handler.py
 %{python_sitelib}/pszi_ab_dispather/socket_listener.py
 
+/etc/ab-dispather/ab-dispather.conf
+/etc/ab-dispather/handle_scheme.json
+
 %defattr(750,root,root,-)
 /usr/sbin/ab-dispather
 /usr/sbin/ab-console
-
 
 %exclude %{python_sitelib}/pszi_ab_dispather/*.pyc
 %exclude %{python_sitelib}/pszi_ab_dispather/*.pyo
