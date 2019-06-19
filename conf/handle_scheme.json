@@ -3,7 +3,7 @@
     "job":{
       "files": {
         "count": "int",
-        "names": ["my_file1", "my_file2", "my_file3"]
+        "alias": ["my_file1", "my_file2", "my_file3"]
       },
       "handling": [
         ["step_1", "полная консольная команда *my_file1* *my_file2*"],
@@ -23,7 +23,7 @@
     "job":{
       "files": {
         "count": "1",
-        "names": ["log_txt_file"]
+        "alias": ["log_txt_file"]
       },
       "handling": [
         ["step_0", "echo -n 0 > *log_txt_file*"],

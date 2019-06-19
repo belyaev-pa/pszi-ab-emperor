@@ -180,7 +180,7 @@ class JobHandler(BaseDB):
         """
         new_cmd_string = step_cmd
         if self.check_pattern(step_cmd):
-            for obj in self.job['job']['files']['names']:
+            for obj in self.job['job']['files']['alias']:
                 rep_str = '*{}*'.format(obj)
                 new_cmd_string = new_cmd_string.replace(rep_str, self.job_files[obj])
         return new_cmd_string
