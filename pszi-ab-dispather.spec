@@ -29,6 +29,12 @@ mkdir -p %{buildroot}/usr/sbin/
 cp -r ./sbin/ab_demon.py %{buildroot}/usr/sbin/ab-dispather
 cp -r ./sbin/console_util.py %{buildroot}/usr/sbin/ab-console
 
+mkdir -p %{buildroot}/var/run/
+
+mkdir -p %{buildroot}/var/lib/ab-dispather/
+
+mkdir -p %{buildroot}/var/log/ab-dispather/
+
 %clean
 rm -rf %{buildroot}
 
@@ -48,6 +54,9 @@ rm -rf %{buildroot}
 %defattr(750,root,root,-)
 /usr/sbin/ab-dispather
 /usr/sbin/ab-console
+
+%dir /var/lib/ab-dispather/
+%dir /var/log/ab-dispather/
 
 %exclude %{python_sitelib}/pszi_ab_dispather/*.pyc
 %exclude %{python_sitelib}/pszi_ab_dispather/*.pyo
