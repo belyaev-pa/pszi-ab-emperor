@@ -6,7 +6,7 @@ from ab_base_daemon import ABBaseDaemon
 from rabbit_tools.sender import parse_conf
 
 
-CONFIG_PATH = '/etc/pszi_ab_emperor/ab_emperor.conf'
+CONFIG_PATH = '/etc/ab-dispather/ab-dispather.conf'
 
 
 def create_daemon(command, conf_dict):

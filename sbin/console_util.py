@@ -8,7 +8,7 @@ import uuid
 from rabbit_tools.sender import parse_conf
 
 
-CONF_FILE_PATH = '/etc/ltps_daemon/daemon.conf'
+CONF_FILE_PATH = '/etc/ab-dispather/ab-dispather.conf'
 
 
 if __name__ == '__main__':
