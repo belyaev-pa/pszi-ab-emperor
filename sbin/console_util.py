@@ -6,7 +6,8 @@ import socket
 import sys
 import json
 import uuid
-from ab_dispatcher.tools import parse_conf, job_printing, problem_job_flushing
+from ab_dispatcher.tools import parse_conf, job_printing, problem_job_clearing
+from ab_dispatcher.tools import db_flush, validate_job_args
 
 
 CONF_FILE_PATH = '/etc/ab-dispatcher/ab-dispatcher.conf'
@@ -14,21 +15,28 @@ CONF_FILE_PATH = '/etc/ab-dispatcher/ab-dispatcher.conf'
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Start handling job with provided type')
-    parser.add_argument('job_type', type=str, help='Job type for handling')
+    parser.add_argument('-t', '--job_type', type=str, dest='job_type', nargs='?',
+                        help='Наименование выполняемой работы пример: -t=test_job')
     parser.add_argument('-a', '--args', type=str, dest='job_args', nargs='?',
-                        help='string with args alias=/path/to/file space separated')
+                        help='строка аргументов пример : -a="alias1=/path/to/file1 alias2=/path/to/file2"')
     parser.add_argument('-i', '--info', dest='job_info', action='store_true',
-                        help='view all jobs')
-    parser.add_argument('-f', '--flush', dest='remove_problem_job', action='store_true',
-                        help='remove all jobs with error')
+                        help='Выводит список доступных для выполнения работ с необходимыми аргументами')
+    parser.add_argument('-c', '--clear', dest='remove_problem_job', action='store_true',
+                        help='Удаляет все задачи с ошибкой выполнения')
+    parser.add_argument('--flush', dest='flush_job_db', action='store_true',
+                        help='Очищает БД полностью. Будьте предельно аккуратны с этим флагом')
     args = parser.parse_args()
     conf_dict = parse_conf(CONF_FILE_PATH)
     if args.job_info:
         job_printing(conf_dict.get('job_json_conf_path', None))
         sys.exit()
     if args.remove_problem_job:
-        problem_job_flushing(conf_dict.get('sqlite3_db_path', None))
+        problem_job_clearing(conf_dict.get('sqlite3_db_path', None))
         sys.exit()
+    if args.flush_job_db:
+        db_flush(conf_dict.get('sqlite3_db_path', None))
+        sys.exit()
+    validate_job_args(args.job_type, args.job_args, conf_dict.get('job_json_conf_path', None))
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server_address = conf_dict['socket_path']
     message = json.dumps(dict(

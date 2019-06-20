@@ -3,6 +3,7 @@
 import ConfigParser
 import sqlite3
 import json
+import os
 
 
 def parse_conf(conf_file_path):
@@ -21,16 +22,20 @@ def parse_conf(conf_file_path):
     return config_dict
 
 
-def job_printing(path):
-    if path is None:
+def job_printing(json_path):
+    if json_path is None:
         raise ConfFileError('В конфигурационном файле АБ отсутствует job_json_conf_path')
-    with open(path) as conf:
+    with open(json_path) as conf:
         json_conf = json.load(conf)
         for item in json_conf.keys():
-            print('Job: {} | required aliases {}'.format(item, json_conf[item]['job']['files']['alias']))
+            s = 'Наименование работы: {}, имеет {} необходимый(ых) файл(ов):'.format(
+                item, json_conf[item]['job']['files']['count'])
+            for alias in json_conf[item]['job']['files']['alias']:
+                s += str(' {},'.format(alias))
+            print(s.rstrip(','))
 
 
-def problem_job_flushing(db_path):
+def problem_job_clearing(db_path):
     if db_path is None:
         raise ConfFileError('В конфигурационном файле АБ отсутствует sqlite3_db_path')
     conn = sqlite3.connect(db_path)
@@ -44,4 +49,45 @@ def problem_job_flushing(db_path):
     conn.commit()
     conn.close()
 
+
+def db_flush(db_path):
+    if os.path.isfile(db_path):
+        os.remove(db_path)
+
+
+def validate_job_args(job_type, job_args, json_path):
+    with open(json_path) as conf:
+        json_conf = json.load(conf)
+        job = json_conf.get(job_type, None)
+        if job is None:
+            raise ABConsoleError('переданной работы нет в конфигурационном файле (ノ_<。)ヾ(´ ▽ )')
+    try:
+        file_count = int(job['job']['files']['count'])
+    except ValueError:
+        raise ConfFileError(
+            'Количество файлов в конфигурационном файле для работы {} должно быть указано цифрой (＃＞＜)'.format(
+                job_type))
+    if file_count == 0 and job_args is None:
+        return
+    elif file_count == 0 and job_args is not None:
+        raise ABConsoleError('У переданной работы нет передаваемых ей файлов (＞ｍ＜)')
+    elif file_count > 0 and job_args is None:
+        raise ABConsoleError('У переданной работы есть {} необходимый(ых) файл(ов) (￣□￣」)'.format(file_count))
+    else:
+        aliases = list()
+        for obj in job_args.split(' '):
+            if '=' not in obj:
+                raise ABConsoleError('Неверный формат аргумента {} отсутствует "="'.format(obj))
+            file_param = obj.split('=')
+            aliases.append(file_param[0])
+        if set(job_args) != set(aliases):
+            msg = 'Переданы неверные аргументы: '
+            for obj in set(aliases).difference(set(job_args)):
+                msg += ' {},'.format(obj)
+            raise ABConsoleError(msg.rstrip(','))
+
+
 class ConfFileError(Exception): pass
+
+
+class ABConsoleError(Exception): pass
