@@ -6,7 +6,7 @@ from datetime import datetime
 from collections import namedtuple
 
 from ab_dispatcher.base_db import BaseDB
-from ab_dispatcher.job_handler import SingletonMeta, JobHandler
+from ab_dispatcher.job_handler import JobHandler
 
 
 class ABSocketListener(BaseDB):
