@@ -93,7 +93,7 @@ class ABSocketListener(BaseDB):
                        error=0,
                        step_number='step_1',
                        arguments=' '.join(map(str, sock_msg['arguments'])),
-                       task_type=sock_msg['task_type'],
+                       task_type=sock_msg['job_type'],
                        manager_type=sock_msg['manager_type'],
                        completed_steps='',
                        date_start=datetime.now().strftime(self.get_settings('date_format')),
