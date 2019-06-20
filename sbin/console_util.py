@@ -6,7 +6,7 @@ import socket
 import sys
 import json
 import uuid
-from ab_dispather.parse_conf import parse_conf
+from ab_dispather.tools import parse_conf, job_printing, problem_job_flushing
 
 
 CONF_FILE_PATH = '/etc/ab-dispather/ab-dispather.conf'
@@ -15,9 +15,20 @@ CONF_FILE_PATH = '/etc/ab-dispather/ab-dispather.conf'
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Start handling job with provided type')
     parser.add_argument('job_type', type=str, help='Job type for handling')
-    parser.add_argument('job_args', type=str, help='string with args alias=/path/to/file space separated')
+    parser.add_argument('-a', '--args', type=str, dest='job_args', nargs='?',
+                        help='string with args alias=/path/to/file space separated')
+    parser.add_argument('-i', '--info', dest='job_info', action='store_true',
+                        help='view all jobs')
+    parser.add_argument('-f', '--flush', dest='remove_problem_job', action='store_true',
+                        help='remove all jobs with error')
     args = parser.parse_args()
     conf_dict = parse_conf(CONF_FILE_PATH)
+    if args.job_info:
+        job_printing(conf_dict.get('job_json_conf_path', None))
+        sys.exit()
+    if args.remove_problem_job:
+        problem_job_flushing(conf_dict.get('sqlite3_db_path', None))
+        sys.exit()
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server_address = conf_dict['socket_path']
     message = json.dumps(dict(

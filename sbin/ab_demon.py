@@ -4,7 +4,7 @@ import sys
 
 from python_sz_daemon.daemon_configurator  import DaemonConfigurator
 from ab_dispather.ab_base_daemon import ABBaseDaemon
-from ab_dispather.parse_conf import parse_conf
+from ab_dispather.tools import parse_conf
 
 
 CONFIG_PATH = '/etc/ab-dispather/ab-dispather.conf'

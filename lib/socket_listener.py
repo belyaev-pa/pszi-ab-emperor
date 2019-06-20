@@ -31,8 +31,9 @@ class ABSocketListener(BaseDB):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         super(ABSocketListener, self).__exit__(exc_type, exc_val, exc_tb)
-        if self.socket_conn:
-            self.socket_conn.close()
+        self.socket_conn.close()
+        if os.path.isfile(self.get_settings('socket_path')):
+            os.remove(self.get_settings('socket_path'))
 
     def init_check(self):
         """

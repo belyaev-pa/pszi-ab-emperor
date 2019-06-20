@@ -55,6 +55,7 @@ class JobHandler(BaseDB):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.job_handling_error:
+            self.update_db_column('error', 1, 'job_id', self.job_id)
             self.make_system_reverse()
         super(JobHandler, self).__exit__(exc_type, exc_val, exc_tb)
         self.log_file.close()
@@ -148,10 +149,11 @@ class JobHandler(BaseDB):
     def make_job_files_dict(self):
         job_files = dict()
         job_files_string = self.select_db_column('arguments', 'job_id', self.job_id)[0]['arguments']
-        for obj in job_files_string.split():
-            file_param = obj.split('=')
-            job_files[file_param[0]] = file_param[1]
-            print('{} - {}'.format(file_param[0], file_param[1]))
+        if job_files_string:
+            for obj in job_files_string.split():
+                file_param = obj.split('=')
+                job_files[file_param[0]] = file_param[1]
+                print('{} - {}'.format(file_param[0], file_param[1]))
         return job_files
 
     @property
