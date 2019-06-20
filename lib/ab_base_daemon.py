@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from python_sz_daemon.base_daemon import BaseDaemon
-from socket_listener import ABSocketListener
+from ab_dispather.socket_listener import ABSocketListener
 
 
 class ABBaseDaemon(BaseDaemon):

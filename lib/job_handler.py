@@ -7,7 +7,7 @@ import syslog
 from datetime import datetime
 from collections import OrderedDict
 
-from base_db import BaseDB
+from ab_dispather.base_db import BaseDB
 
 
 class SingletonMeta(type):
