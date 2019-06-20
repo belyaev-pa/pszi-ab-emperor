@@ -6,8 +6,8 @@ Type=idle
 User=root
 PIDFile=/var/run/ab_daemon.pid
 
-ExecStart=/usr/sbin/ab-dispather start
-ExecStop=/usr/sbin/ab-dispather stop
+ExecStart=/usr/sbin/ab-dispatcher start
+ExecStop=/usr/sbin/ab-dispatcher stop
 Restart=always
 TimeoutStartSec=10
 RestartSec=10

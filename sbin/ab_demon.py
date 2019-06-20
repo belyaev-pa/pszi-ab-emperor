@@ -3,11 +3,11 @@
 import sys
 
 from python_sz_daemon.daemon_configurator  import DaemonConfigurator
-from ab_dispather.ab_base_daemon import ABBaseDaemon
-from ab_dispather.tools import parse_conf
+from ab_dispatcher.ab_base_daemon import ABBaseDaemon
+from ab_dispatcher.tools import parse_conf
 
 
-CONFIG_PATH = '/etc/ab-dispather/ab-dispather.conf'
+CONFIG_PATH = '/etc/ab-dispatcher/ab-dispatcher.conf'
 
 
 def create_daemon(command, conf_dict):

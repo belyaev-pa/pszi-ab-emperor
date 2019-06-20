@@ -54,7 +54,7 @@ echo "Применение файлов из пакета"
 %{python_sitelib}/ab_dispather/__init__.py
 %{python_sitelib}/ab_dispather/job_handler.py
 %{python_sitelib}/ab_dispather/socket_listener.py
-%{python_sitelib}/ab_dispather/tools.py
+%{python_sitelib}/ab_dispather/parse_conf.py
 
 /etc/ab-dispather/ab-dispather.conf
 /etc/ab-dispather/handle_scheme.json

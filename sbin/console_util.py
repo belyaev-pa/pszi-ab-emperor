@@ -6,10 +6,10 @@ import socket
 import sys
 import json
 import uuid
-from ab_dispather.tools import parse_conf, job_printing, problem_job_flushing
+from ab_dispatcher.tools import parse_conf, job_printing, problem_job_flushing
 
 
-CONF_FILE_PATH = '/etc/ab-dispather/ab-dispather.conf'
+CONF_FILE_PATH = '/etc/ab-dispatcher/ab-dispatcher.conf'
 
 
 if __name__ == '__main__':
