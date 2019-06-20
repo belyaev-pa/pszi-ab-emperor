@@ -5,8 +5,8 @@ import socket
 from datetime import datetime
 from collections import namedtuple
 
-from base_db import BaseDB
-from job_handler import SingletonMeta, JobHandler
+from ab_dispather.base_db import BaseDB
+from ab_dispather.job_handler import SingletonMeta, JobHandler
 
 
 class ABSocketListener(BaseDB):
