@@ -93,7 +93,7 @@ class ABSocketListener(BaseDB):
                        status=1,
                        error=0,
                        step_number='step_1',
-                       arguments=' '.join(map(str, sock_msg['arguments'])),
+                       arguments=''.join(map(str, sock_msg['arguments'])),
                        task_type=sock_msg['job_type'],
                        manager_type=sock_msg['manager_type'],
                        completed_steps='',
