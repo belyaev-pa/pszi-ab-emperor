@@ -6,7 +6,7 @@ import socket
 import sys
 import json
 import uuid
-from   ab_dispather.parse_conf import parse_conf
+from ab_dispather.parse_conf import parse_conf
 
 
 CONF_FILE_PATH = '/etc/ab-dispather/ab-dispather.conf'
