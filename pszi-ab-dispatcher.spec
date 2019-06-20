@@ -52,7 +52,7 @@ echo "Применение файлов из пакета"
 %{python_sitelib}/ab_dispatcher/__init__.py
 %{python_sitelib}/ab_dispatcher/job_handler.py
 %{python_sitelib}/ab_dispatcher/socket_listener.py
-%{python_sitelib}/ab_dispatcher/parse_conf.py
+%{python_sitelib}/ab_dispatcher/tools.py
 
 /etc/ab-dispatcher/ab-dispatcher.conf
 /etc/ab-dispatcher/handle_scheme.json
