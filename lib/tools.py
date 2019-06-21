@@ -89,6 +89,31 @@ def validate_job_args(job_type, job_args, json_path):
             raise ABConsoleError(msg.rstrip(','))
 
 
+def conf_view(conf_path):
+    print('Список параметров конфигурационного файла:')
+    for k, v in parse_conf(conf_path).iteritems():
+        print('{} = {}'.format(k, v))
+
+
+def conf_check(conf_path):
+    required_param = {'pid_file_path',
+                      'log_name',
+                      'sqlite3_db_path',
+                      'log_files_dir',
+                      'job_json_conf_path',
+                      'date_format',
+                      'socket_path',
+                      'log_files_dir'}
+    conf_param = set(parse_conf(conf_path).keys())
+    if required_param.issubset(conf_param):
+        print('CONF - ОК. Все необходимые параметры присутствуют в файле')
+    else:
+        msg = 'CONF - НЕ ОК.Некоторые параметры отсутствуют: '
+        for obj in required_param.difference(conf_param):
+            msg += ' {},'.format(obj)
+        print(msg.rstrip(','))
+
+
 class ConfFileError(Exception): pass
 
 

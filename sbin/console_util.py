@@ -6,8 +6,9 @@ import socket
 import sys
 import json
 import uuid
+
 from ab_dispatcher.tools import parse_conf, job_printing, problem_job_clearing
-from ab_dispatcher.tools import db_flush, validate_job_args
+from ab_dispatcher.tools import db_flush, validate_job_args, conf_view, conf_check
 
 
 CONF_FILE_PATH = '/etc/ab-dispatcher/ab-dispatcher.conf'
@@ -25,6 +26,10 @@ if __name__ == '__main__':
                         help='Удаляет все задачи с ошибкой выполнения')
     parser.add_argument('--flush', dest='flush_job_db', action='store_true',
                         help='Очищает БД полностью. Будьте предельно аккуратны с этим флагом')
+    parser.add_argument('-v','--view', dest='conf_view', action='store_true',
+                        help='Выводит все текущие параметры конфигурационного файла')
+    parser.add_argument('-k', dest='conf_check', action='store_true',
+                        help='Проверяет все ли необходимые для работы параметры присутствуют в конфигурацинном файле')
     args = parser.parse_args()
     conf_dict = parse_conf(CONF_FILE_PATH)
     if args.job_info:
@@ -35,6 +40,12 @@ if __name__ == '__main__':
         sys.exit()
     if args.flush_job_db:
         db_flush(conf_dict.get('sqlite3_db_path', None))
+        sys.exit()
+    if args.conf_view:
+        conf_view(CONF_FILE_PATH)
+        sys.exit()
+    if args.conf_check:
+        conf_check(CONF_FILE_PATH)
         sys.exit()
     validate_job_args(args.job_type, args.job_args, conf_dict.get('job_json_conf_path', None))
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
