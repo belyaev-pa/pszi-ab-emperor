@@ -14,7 +14,7 @@ class ABBaseDaemon(BaseDaemon):
         socket_path = self.conf_dict.get('socket_path' , None)
         if socket_path is None:
             exit('Путь до сокет файла не указан в конфигурационном файле')
-        if os.path.isfile(socket_path):
+        if os.path.exists(socket_path):
             os.remove(socket_path)
 
     def run(self):
