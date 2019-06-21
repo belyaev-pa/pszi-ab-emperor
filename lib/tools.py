@@ -80,9 +80,11 @@ def validate_job_args(job_type, job_args, json_path):
                 raise ABConsoleError('Неверный формат аргумента {} отсутствует "="'.format(obj))
             file_param = obj.split('=')
             aliases.append(file_param[0])
-        if set(job_args) != set(aliases):
+        set_j = set(job['job']['files']['alias'])
+        set_a = set(aliases)
+        if set_j != set_a:
             msg = 'Переданы неверные аргументы: '
-            for obj in set(aliases).difference(set(job_args)):
+            for obj in set_a.difference(set_j):
                 msg += ' {},'.format(obj)
             raise ABConsoleError(msg.rstrip(','))
 

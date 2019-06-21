@@ -11,8 +11,6 @@ from ab_dispatcher.job_handler import JobHandler
 
 class ABSocketListener(BaseDB):
 
-    __metaclass__ = SingletonMeta
-
     def __init__(self, conf_dict):
         """
         Конструктор обработчика заданий

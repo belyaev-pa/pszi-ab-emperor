@@ -45,6 +45,7 @@ if __name__ == '__main__':
         manager_type='local',
         arguments=args.job_args
     ))
+    print('Пытаюсь выполнить заданную работу...')
     try:
         sock.connect(server_address)
     except socket.error:
@@ -57,4 +58,5 @@ if __name__ == '__main__':
             answer_received += data
     finally:
         sock.close()
-    print('log is here: {}'.format(answer_received))
+    print('Выполнение завершено.')
+    print('Лог файл можно посмотреть: {}'.format(answer_received))
