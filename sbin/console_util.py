@@ -26,9 +26,9 @@ if __name__ == '__main__':
                         help='Удаляет все задачи с ошибкой выполнения')
     parser.add_argument('--flush', dest='flush_job_db', action='store_true',
                         help='Очищает БД полностью. Будьте предельно аккуратны с этим флагом')
-    parser.add_argument('-v','--view', dest='conf_view', action='store_true',
+    parser.add_argument('-v', '--view', dest='conf_view', action='store_true',
                         help='Выводит все текущие параметры конфигурационного файла')
-    parser.add_argument('-k', dest='conf_check', action='store_true',
+    parser.add_argument('-k', '--check', dest='conf_check', action='store_true',
                         help='Проверяет все ли необходимые для работы параметры присутствуют в конфигурацинном файле')
     args = parser.parse_args()
     conf_dict = parse_conf(CONF_FILE_PATH)
