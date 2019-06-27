@@ -26,13 +26,14 @@ class BaseDB(object):
         """
         self.conf_dict = conf_dict
         syslog.openlog(self.get_settings('log_name'))
+        sql_path = self.get_settings('sqlite3_db_path')
         try:
-            self.conn = sqlite3.connect(self.get_settings('sqlite3_db_path'))
-        except sqlite3.Error as e:
-            syslog.syslog(syslog.LOG_INFO, '{} can`t connect to DB...{}'.format(datetime.now(), e))
+            self.conn = sqlite3.connect(sql_path)
+        except sqlite3.Error as err:
+            syslog.syslog(syslog.LOG_ERR, 'Не могу выполнить подключение к БД {} ({})'.format(sql_path, err))
             sys.exit('can`t connect to DB...')
         else:
-            syslog.syslog(syslog.LOG_INFO, '{} Connection is successful...'.format(datetime.now()))
+            syslog.syslog(syslog.LOG_INFO, 'Подключение к БД {} прошло успешно...'.format(sql_path))
             self.check_table_or_create()
 
     def __enter__(self):
@@ -163,11 +164,15 @@ class BaseDB(object):
 
     def get_settings(self, setting):
         if type(self.conf_dict) is not dict:
-            raise AttributeError('conf_dict must be a dict.')
+            msg = 'conf_dict должен быть словарем.'
+            syslog.syslog(syslog.LOG_ERR, msg)
+            raise AttributeError(msg)
         try:
             prop = self.conf_dict[setting]
-        except KeyError as e:
-            raise SettingIsNoneException("Can`t find {0} in config file".format(e))
+        except KeyError:
+            msg = "Не могу найти необходимый параметр параметр {0} в конфигурационном файле".format(setting)
+            syslog.syslog(syslog.LOG_ERR, msg)
+            raise KeyError(msg)
         return prop
 
 

@@ -137,7 +137,9 @@ class JobHandler(BaseDB):
         job_files = dict()
         job_files_string = self.select_db_column('arguments', 'job_id', self.job_id)[0]['arguments']
         if job_files_string:
-            for obj in job_files_string.split(' '):
+            syslog.syslog(syslog.LOG_DEBUG, 'make_jo_files_dict ... {}'.format(job_files_string))
+            for obj in job_files_string.split():
+                syslog.syslog(syslog.LOG_DEBUG, 'obj = {}'.format(obj))
                 file_param = obj.split('=')
                 job_files[file_param[0]] = file_param[1]
                 print('{} - {}'.format(file_param[0], file_param[1]))
