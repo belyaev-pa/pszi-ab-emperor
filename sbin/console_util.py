@@ -6,9 +6,10 @@ import socket
 import sys
 import json
 import uuid
+import threading
 
 from ab_dispatcher.tools import parse_conf, job_printing, problem_job_clearing
-from ab_dispatcher.tools import db_flush, validate_job_args, conf_view, conf_check
+from ab_dispatcher.tools import db_flush, validate_job, conf_view, conf_check, spin
 
 
 CONF_FILE_PATH = '/etc/ab-dispatcher/ab-dispatcher.conf'
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--files', type=str, dest='job_args', nargs='?',
                         help='строка файлов пример : -f="alias1=/path/to/file1 alias2=/path/to/file2"')
     parser.add_argument('-kw', '--kwargs', type=str, dest='job_kwargs', nargs='?',
-                        help='строка именнованных аргументов пример : -kw="db_alias=MyDataBase path_alias=/some/path"')
+                        help='строка именованных  аргументов пример : -kw="db_alias=MyDataBase path_alias=/some/path"')
     parser.add_argument('-i', '--info', dest='job_info', action='store_true',
                         help='Выводит список доступных для выполнения работ с необходимыми аргументами')
     parser.add_argument('-c', '--clear', dest='remove_problem_job', action='store_true',
@@ -31,7 +32,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--view', dest='conf_view', action='store_true',
                         help='Выводит все текущие параметры конфигурационного файла')
     parser.add_argument('-k', '--check', dest='conf_check', action='store_true',
-                        help='Проверяет все ли необходимые для работы параметры присутствуют в конфигурацинном файле')
+                        help='Проверяет все ли необходимые для работы параметры присутствуют в конфигурационном файле')
     args = parser.parse_args()
     conf_dict = parse_conf(CONF_FILE_PATH)
     if args.job_info:
@@ -49,7 +50,8 @@ if __name__ == '__main__':
     if args.conf_check:
         conf_check(CONF_FILE_PATH)
         sys.exit()
-    validate_job_args(args.job_type, args.job_args, args.job_kwargs, conf_dict.get('job_json_conf_path', None))
+    validate_job(args.job_type, args.job_args, conf_dict.get('job_json_conf_path', None), 'files')
+    validate_job(args.job_type, args.job_kwargs, conf_dict.get('job_json_conf_path', None), 'kwargs')
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server_address = conf_dict['socket_path']
     message = json.dumps(dict(
@@ -64,13 +66,19 @@ if __name__ == '__main__':
         sock.connect(server_address)
     except socket.error:
         sys.exit("не могу подключиться к сокету")
+    done = threading.Event()
+    spinner = threading.Thread(target=spin,
+                               args=('Выполняю обработку...', done))
+    spinner.start()
+    answer_received = ''
     try:
         sock.sendall(message + '\r\n\r\n')
-        answer_received = ''
         while not answer_received.endswith('\r\n\r\n'):
             data = sock.recv(32)
             answer_received += data
     finally:
+        done.set()
+        spinner.join()
         sock.close()
     print('Выполнение завершено.')
     print('Лог файл можно посмотреть: {}'.format(answer_received))

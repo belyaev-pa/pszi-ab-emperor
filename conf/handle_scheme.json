@@ -1,4 +1,32 @@
 {
+  "test_job": {
+    "job":{
+      "files": {
+        "count": "1",
+        "alias": ["log_txt_file"]
+      },
+      "kwargs": {
+        "count": "1",
+        "alias": ["grep_filter"]
+      },
+      "handling": [
+        ["step_0", "ps aux | grep (~grep_filter~) > (*log_txt_file*)"],
+        ["step_1", "echo -n 1 >> (*log_txt_file*)"],
+        ["step_2", "echo -n 2 >> (*log_txt_file*)"],
+        ["step_3", "false"],
+        ["step_4", "echo -n 4 >> (*log_txt_file*)"]
+      ]
+    },
+    "error": {
+      "handling": [
+        ["step_4", "echo -n 4 >> (*log_txt_file*)"],
+        ["step_3", "echo -n 3 >> (*log_txt_file*)"],
+        ["step_2", "echo -n 2 >> (*log_txt_file*)"],
+        ["step_1", "echo -n 1 >> (*log_txt_file*)"],
+        ["step_0", "echo -n 0 >> (*log_txt_file*)"]
+      ]
+    }
+  },
   "job_type": {
     "job":{
       "files": {
@@ -29,6 +57,10 @@
         "count": "2",
         "alias": ["policy_pp", "se_linux_context_zip"]
       },
+      "kwargs": {
+        "count": "1",
+        "alias": ["grep_filter"]
+      },
       "handling": [
         ["step_0", "semodule -i *policy_pp*"],
         ["step_1", "запись файлов пользователей в каталог *se_linux_context_zip*"]
@@ -46,6 +78,10 @@
       "files": {
         "count": "1",
         "alias": ["policy_pp"]
+      },
+      "kwargs": {
+        "count": "1",
+        "alias": ["grep_filter"]
       },
       "handling": [
         ["step_0", "semodule -i *policy_pp*"],
@@ -66,6 +102,10 @@
         "count": "1",
         "alias": ["policy_pp"]
       },
+      "kwargs": {
+        "count": "1",
+        "alias": ["grep_filter"]
+      },
       "handling": [
         ["step_0", "semodule -i *policy_pp*"],
         ["step_1", "restorecon -vR /"]
@@ -84,6 +124,10 @@
         "count": "1",
         "alias": ["sql_script"]
       },
+      "kwargs": {
+        "count": "1",
+        "alias": ["grep_filter"]
+      },
       "handling": [
         ["step_0", "psql -U username -d data_base_name -a -f *sql_script*"]
       ]
@@ -99,6 +143,10 @@
       "files": {
         "count": "1",
         "alias": ["policy_pp"]
+      },
+      "kwargs": {
+        "count": "1",
+        "alias": ["grep_filter"]
       },
       "handling": [
         ["step_0", "semodule -i *policy_pp*"]
@@ -116,6 +164,10 @@
         "count": "1",
         "alias": ["policy_pp"]
       },
+      "kwargs": {
+        "count": "1",
+        "alias": ["grep_filter"]
+      },
       "handling": [
         ["step_0", "semodule -i *policy_pp*"]
       ]
@@ -131,6 +183,10 @@
       "files": {
         "count": "1",
         "alias": ["policy_pp"]
+      },
+      "kwargs": {
+        "count": "1",
+        "alias": ["grep_filter"]
       },
       "handling": [
         ["step_0", "semodule -i *policy_pp*"]
@@ -148,6 +204,10 @@
         "count": "1",
         "alias": ["sql_script"]
       },
+      "kwargs": {
+        "count": "1",
+        "alias": ["grep_filter"]
+      },
       "handling": [
         ["step_0", "psql -U username -d bata_base_name -a -f *sql_script*"]
       ]
@@ -164,6 +224,10 @@
         "count": "1",
         "alias": ["sql_script"]
       },
+      "kwargs": {
+        "count": "1",
+        "alias": ["grep_filter"]
+      },
       "handling": [
         ["step_0", "psql -U username -d myDataBase -a -f *sql_script*"]
       ]
@@ -179,6 +243,10 @@
       "files": {
         "count": "1",
         "alias": ["sql_script"]
+      },
+      "kwargs": {
+        "count": "1",
+        "alias": ["grep_filter"]
       },
       "handling": [
         ["step_0", "psql -U username -d myDataBase -a -f *sql_script*"]

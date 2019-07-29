@@ -4,6 +4,8 @@ import ConfigParser
 import sqlite3
 import json
 import os
+import sys
+import itertools
 
 
 def parse_conf(conf_file_path):
@@ -28,11 +30,15 @@ def job_printing(json_path):
     with open(json_path) as conf:
         json_conf = json.load(conf)
         for item in json_conf.keys():
-            s = 'Наименование работы: {}, имеет {} необходимый(ых) файл(ов):'.format(
-                item, json_conf[item]['job']['files']['count'])
-            for alias in json_conf[item]['job']['files']['alias']:
-                s += str(' {},'.format(alias))
-            print(s.rstrip(','))
+            print('*' * 50)
+            print('Наименование работы: {},'.format(item))
+            print(', имеет {} необходимый(ых) файл(ов) с алиасами:'.format(json_conf[item]['job']['files']['count']))
+            print(','.join([alias for alias in json_conf[item]['job']['files']['alias']]).rstrip(','))
+            print(', имеет {} необходимый(ых) именованый(ых) агрумент(ов) с алиасами:'.format(
+                json_conf[item]['job']['files']['count']))
+            print(', '.join([alias for alias in json_conf[item]['job']['kwargs']['alias']]).rstrip(','))
+        else:
+            print('*' * 50)
 
 
 def problem_job_clearing(db_path):
@@ -55,32 +61,40 @@ def db_flush(db_path):
         os.remove(db_path)
 
 
-def validate_job_args(job_type, job_args, job_kwargs, json_path):
+def validate_job(job_type, args, json_path, validate_type):
+    """
+    функция занимается валидацией именованых агрументов и файлов
+    :param job_type: наименование работы
+    :param args: агрументы или файлы
+    :param json_path: путь до json файла
+    :param validate_type: тип валидирования 'files' или 'kwargs'
+    :return:
+    """
     with open(json_path) as conf:
         json_conf = json.load(conf)
         job = json_conf.get(job_type, None)
         if job is None:
             raise ABConsoleError('переданной работы нет в конфигурационном файле')
     try:
-        file_count = int(job['job']['files']['count'])
+        arg_count = int(job['job'][validate_type]['count'])
     except ValueError:
         raise ConfFileError(
-            'Количество файлов в конфигурационном файле для работы {} должно быть указано цифрой'.format(
+            'Количество файлов и агрументов в конфигурационном файле для работы {} должно быть указано цифрой'.format(
                 job_type))
-    if file_count == 0 and job_args is None:
+    if arg_count == 0 and args is None:
         return
-    elif file_count == 0 and job_args is not None:
-        raise ABConsoleError('У переданной работы нет передаваемых ей файлов')
-    elif file_count > 0 and job_args is None:
-        raise ABConsoleError('У переданной работы есть {} необходимый(ых) файл(ов)'.format(file_count))
+    elif arg_count == 0 and args is not None:
+        raise ABConsoleError('У переданной работы нет передаваемых ей файлов или агрументов')
+    elif arg_count > 0 and args is None:
+        raise ABConsoleError('У переданной работы есть {} необходимый(ых) файл(ов) или агрумент(ов)'.format(arg_count))
     else:
         aliases = list()
-        for obj in job_args.split(' '):
+        for obj in args.split(' '):
             if '=' not in obj:
-                raise ABConsoleError('Неверный формат аргумента {} отсутствует "="'.format(obj))
+                raise ABConsoleError('Неверный формат аргумента или файлов {} отсутствует "="'.format(obj))
             file_param = obj.split('=')
             aliases.append(file_param[0])
-        set_j = set(job['job']['files']['alias'])
+        set_j = set(job['job'][validate_type]['alias'])
         set_a = set(aliases)
         if set_j != set_a:
             msg = 'Переданы неверные аргументы: '
@@ -112,6 +126,18 @@ def conf_check(conf_path):
         for obj in required_param.difference(conf_param):
             msg += ' {},'.format(obj)
         print(msg.rstrip(','))
+
+
+def spin(msg, done):
+    write, flush = sys.stdout.write, sys.stdout.flush
+    for char in itertools.cycle('|/-\\'):
+        status = char + ' ' + msg
+        write(status)
+        flush()
+        write('\x08' * len(status))
+        if done.wait(.1):
+            break
+    write(' ' * len(status) + '\x08' * len(status))
 
 
 class ConfFileError(Exception): pass
