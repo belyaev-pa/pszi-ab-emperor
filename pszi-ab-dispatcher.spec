@@ -1,6 +1,6 @@
 Name:		pszi-ab-dispatcher
 Version: 	0.1
-Release: 	1%{?dist}.sz
+Release: 	2%{?dist}.sz
 Summary: 	Диспетчер Агента Безопасности
 Group: 		common
 License: 	commercial
