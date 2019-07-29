@@ -28,7 +28,8 @@ class JobHandler(BaseDB):
         syslog.openlog(self.get_settings('log_name'))
         self.job_handling_error = self.get_job_handling_error
         self.job_type = self.get_job_type
-        self.job_files = self.make_job_files_dict()
+        self.job_files = self.make_job_param_dict('arguments')
+        self.job_kwargs = self.make_job_param_dict('kwargs')
         self.completed_step = self.get_completed_steps()
         with open(self.get_settings('job_json_conf_path')) as conf:
             json_conf = json.load(conf)
@@ -57,13 +58,13 @@ class JobHandler(BaseDB):
         """
         msg = "{} : Запускаем выполнение задачи id='{}', type='{}'\n".format(datetime.now(), self.job_id, self.job_type)
         self.write_log(msg)
-        print(self.job['job']['files']['count'])
-        print(len(self.job_files.keys()))
-        if int(self.job['job']['files']['count']) != len(self.job_files.keys()):
-            msg = "Кол-во файлов пререданных не совпадает с количеством файлов в конфиге: {0}\n".format(self.job_type)
+        if int(self.job['job']['files']['count']) != len(self.job_files.keys()) or \
+                int(self.job['job']['kwargs']['count']) != len(self.job_kwargs.keys()):
+            msg = "Кол-во файлов или аргументов пререданных не совпадает с количеством файлов " \
+                  "или агрументов в конфиге: {0}\n".format(self.job_type)
             self.write_log(msg)
             return self.log_file_path
-            # raise WrongJsonFormatException(msg)
+
         for step_number, cmd in self.dict_steps.iteritems():
             if step_number not in self.completed_step:
                 if self.job_handler(step_number, self.dict_steps):
@@ -106,7 +107,7 @@ class JobHandler(BaseDB):
             self.write_log(msg)
             return self.log_file_path
             # raise WrongJsonFormatException()
-        new_cmd = self.files_in_cmd_inject(step_cmd)
+        new_cmd = self.param_in_cmd_inject(step_cmd)
         process = subprocess.Popen(new_cmd,
                                    shell=True,
                                    stdout=subprocess.PIPE,
@@ -123,27 +124,32 @@ class JobHandler(BaseDB):
         return completed_steps.split()
 
     @staticmethod
-    def check_pattern(cmd_str):
+    def check_pattern(cmd_str, raw_pattern):
         """
         проверяет регуляркой есть ли в строке cmd {*}
 
         :param cmd_str: вызываемая командная строка
         :return: bool
         """
-        pattern = re.compile('\*.*\*')
+        pattern = re.compile(raw_pattern)
         return True if re.search(pattern, cmd_str) else False
 
-    def make_job_files_dict(self):
-        job_files = dict()
-        job_files_string = self.select_db_column('arguments', 'job_id', self.job_id)[0]['arguments']
-        if job_files_string:
-            syslog.syslog(syslog.LOG_DEBUG, 'make_jo_files_dict ... {}'.format(job_files_string))
-            for obj in job_files_string.split():
+    def make_job_param_dict(self, db_field):
+        """
+        сосдает словарь файлов или именованных агрументов в зависимости от того что передано
+        :param db_field: наименование поля в БД
+        :return:
+        """
+        job_dict = dict()
+        job_dict_string = self.select_db_column(db_field, 'job_id', self.job_id)[0][db_field]
+        if job_dict_string:
+            syslog.syslog(syslog.LOG_DEBUG, 'make_jo_{}_dict ... {}'.format(db_field, job_dict_string))
+            for obj in job_dict_string.split():
                 syslog.syslog(syslog.LOG_DEBUG, 'obj = {}'.format(obj))
-                file_param = obj.split('=')
-                job_files[file_param[0]] = file_param[1]
-                print('{} - {}'.format(file_param[0], file_param[1]))
-        return job_files
+                param = obj.split('=')
+                job_dict[param[0]] = param[1]
+                print('{} - {}'.format(param[0], param[1]))
+        return job_dict
 
     @property
     def get_job_handling_error(self):
@@ -162,18 +168,24 @@ class JobHandler(BaseDB):
         self.log_file.write(msg)
         syslog.syslog(syslog.LOG_INFO, msg)
 
-    def files_in_cmd_inject(self, step_cmd):
+    def param_in_cmd_inject(self, step_cmd):
         """
         Вставляет в строку cmd пути до файлов
 
         :param step_cmd: строка cmd
         :return: новую строку cmd
         """
+        files_pattern = '\(\*.*\*\)'
+        kwargs_pattern = '\(~.*~\)'
         new_cmd_string = step_cmd
-        if self.check_pattern(step_cmd):
+        if self.check_pattern(step_cmd, files_pattern):
             for obj in self.job['job']['files']['alias']:
-                rep_str = '*{}*'.format(obj)
+                rep_str = '(*{}*)'.format(obj)
                 new_cmd_string = new_cmd_string.replace(rep_str, self.job_files[obj])
+        if self.check_pattern(step_cmd, kwargs_pattern):
+            for obj in self.job['job']['kwargs']['alias']:
+                rep_str = '(~{}~)'.format(obj)
+                new_cmd_string = new_cmd_string.replace(rep_str, self.job_kwargs[obj])
         return new_cmd_string
 
     def make_system_reverse(self):

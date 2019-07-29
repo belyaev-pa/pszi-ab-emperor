@@ -130,12 +130,13 @@ class BaseDB(object):
                         error,                        
                         step_number,
                         arguments,
+                        kwargs,
                         task_type,
                         manager_type,
                         completed_steps,
                         date_start,
                         date_finish)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                         """, insert_tuple)
         c.close()
         self.conn.commit()
@@ -150,6 +151,7 @@ class BaseDB(object):
                         'error'           INTEGER                           NOT NULL,                        
                         'step_number'     VARCHAR                           NOT NULL,
                         'arguments'       TEXT                              NOT NULL,
+                        'kwargs'          TEXT                              NOT NULL,
                         'task_type'       VARCHAR                           NOT NULL,
                         'manager_type'    VARCHAR                           NOT NULL,                        
                         'completed_steps' VARCHAR,

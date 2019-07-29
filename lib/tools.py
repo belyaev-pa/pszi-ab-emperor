@@ -55,24 +55,24 @@ def db_flush(db_path):
         os.remove(db_path)
 
 
-def validate_job_args(job_type, job_args, json_path):
+def validate_job_args(job_type, job_args, job_kwargs, json_path):
     with open(json_path) as conf:
         json_conf = json.load(conf)
         job = json_conf.get(job_type, None)
         if job is None:
-            raise ABConsoleError('переданной работы нет в конфигурационном файле (ノ_<。)ヾ(´ ▽ )')
+            raise ABConsoleError('переданной работы нет в конфигурационном файле')
     try:
         file_count = int(job['job']['files']['count'])
     except ValueError:
         raise ConfFileError(
-            'Количество файлов в конфигурационном файле для работы {} должно быть указано цифрой (＃＞＜)'.format(
+            'Количество файлов в конфигурационном файле для работы {} должно быть указано цифрой'.format(
                 job_type))
     if file_count == 0 and job_args is None:
         return
     elif file_count == 0 and job_args is not None:
-        raise ABConsoleError('У переданной работы нет передаваемых ей файлов (＞ｍ＜)')
+        raise ABConsoleError('У переданной работы нет передаваемых ей файлов')
     elif file_count > 0 and job_args is None:
-        raise ABConsoleError('У переданной работы есть {} необходимый(ых) файл(ов) (￣□￣」)'.format(file_count))
+        raise ABConsoleError('У переданной работы есть {} необходимый(ых) файл(ов)'.format(file_count))
     else:
         aliases = list()
         for obj in job_args.split(' '):

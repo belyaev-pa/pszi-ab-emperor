@@ -18,8 +18,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Start handling job with provided type')
     parser.add_argument('-t', '--job_type', type=str, dest='job_type', nargs='?',
                         help='Наименование выполняемой работы пример: -t=test_job')
-    parser.add_argument('-a', '--args', type=str, dest='job_args', nargs='?',
-                        help='строка аргументов пример : -a="alias1=/path/to/file1 alias2=/path/to/file2"')
+    parser.add_argument('-f', '--files', type=str, dest='job_args', nargs='?',
+                        help='строка файлов пример : -f="alias1=/path/to/file1 alias2=/path/to/file2"')
+    parser.add_argument('-kw', '--kwargs', type=str, dest='job_kwargs', nargs='?',
+                        help='строка именнованных аргументов пример : -kw="db_alias=MyDataBase path_alias=/some/path"')
     parser.add_argument('-i', '--info', dest='job_info', action='store_true',
                         help='Выводит список доступных для выполнения работ с необходимыми аргументами')
     parser.add_argument('-c', '--clear', dest='remove_problem_job', action='store_true',
@@ -47,14 +49,15 @@ if __name__ == '__main__':
     if args.conf_check:
         conf_check(CONF_FILE_PATH)
         sys.exit()
-    validate_job_args(args.job_type, args.job_args, conf_dict.get('job_json_conf_path', None))
+    validate_job_args(args.job_type, args.job_args, args.job_kwargs, conf_dict.get('job_json_conf_path', None))
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server_address = conf_dict['socket_path']
     message = json.dumps(dict(
         job_id=str(uuid.uuid4()),
         job_type=args.job_type,
         manager_type='local',
-        arguments=args.job_args
+        arguments=args.job_args,
+        kwargs=args.job_kwargs
     ))
     print('Пытаюсь выполнить заданную работу...')
     try:

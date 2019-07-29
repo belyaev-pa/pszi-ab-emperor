@@ -5,9 +5,13 @@
         "count": "int",
         "alias": ["my_file1", "my_file2", "my_file3"]
       },
+      "kwargs": {
+        "count": "int",
+        "alias": ["my_kwarg1", "my_kwarg2"]
+      },
       "handling": [
-        ["step_1", "полная консольная команда *my_file1* *my_file2*"],
-        ["step_2", "полная консольная команда *my_file3*"],
+        ["step_1", "полная консольная команда (~my_kwarg1~) (*my_file1*) (*my_file2*)"],
+        ["step_2", "полная консольная команда (~my_kwarg2~) (*my_file3*)"],
         ["step_N", "любая команда без файлов, передается без файлов"]
       ]
     },
