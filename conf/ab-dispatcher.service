@@ -2,7 +2,7 @@
 Description=Диспетчер Агента Безопасности
 
 [Service]
-Type=idle
+Type=forking
 User=root
 PIDFile=/var/run/ab_daemon.pid
 

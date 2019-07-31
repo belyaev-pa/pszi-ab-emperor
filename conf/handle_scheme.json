@@ -1,260 +1,250 @@
 {
+  "abdispatcher_tasks_update": {
+    "job": {
+      "help": "Обновление перечня типов сообщений, выполняемых Диспетчером АБ",
+      "files": {
+        "count": "1",
+        "alias": [
+          "handle_scheme_conf"
+        ]
+      },
+      "kwargs": {
+        "count": "0",
+        "alias": []
+      },
+      "handling": [
+        [
+          "Сохранение_предыдущего_файла_handle_scheme.json",
+          "mv /etc/ab-dispatcher/handle_scheme.json /etc/ab-dispatcher/handle_scheme.json.old"
+        ],
+        [
+          "Обновление_файла_handle_scheme.json",
+          "mv (*handle_scheme_conf*) /etc/ab-dispatcher/handle_scheme.json"
+        ],
+        [
+          "Запуск_проверки_json_структуры_файла",
+          "/usr/sbin/ab-console -i"
+        ],
+        [
+          "Удаление_предыдущего_файла_handle_scheme.json",
+          "rm -rf /var/lib/aide/sintez/aide.conf.old"
+        ]
+      ]
+    },
+    "error": {
+      "handling": [
+        [
+          "Удаление_предыдущего_файла_handle_scheme.json",
+          "echo 0"
+        ],
+        [
+          "Запуск_проверки_json_структуры_файла",
+          "echo 0"
+        ],
+        [
+          "Обновление_файла_handle_scheme.json",
+          "mv /var/lib/aide/sintez/aide.conf.old /var/lib/aide/sintez/aide.conf"
+        ],
+        [
+          "Сохранение_предыдущего_файла_handle_scheme.json",
+          "echo 0"
+        ]
+      ]
+    }
+  },
+  "counthash_start": {
+    "job": {
+      "help": "Запуск на сравнение КЦ",
+      "files": {
+        "count": "0",
+        "alias": []
+      },
+      "kwargs": {
+        "count": "0",
+        "alias": []
+      },
+      "handling": [
+        [
+          "Запуск_counthash",
+          "/sbin/counthash"
+        ]
+      ]
+    },
+    "error": {
+      "handling": [
+        [
+          "Запуск_counthash",
+          "echo 0"
+        ]
+      ]
+    }
+  },
+  "counthash_rewrite": {
+    "help": "Запуск на создание нового эталонного значения КЦ",
+    "job": {
+      "files": {
+        "count": "0",
+        "alias": []
+      },
+      "kwargs": {
+        "count": "0",
+        "alias": []
+      },
+      "handling": [
+        [
+          "Запуск_пересчёта_эталонной_БД_counthash",
+          "/sbin/counthash -r"
+        ]
+      ]
+    },
+    "error": {
+      "handling": [
+        [
+          "Запуск_пересчёта_эталонной_БД_counthash",
+          "echo 0"
+        ]
+      ]
+    }
+  },
+  "counthash_startup_rewrite": {
+    "help": "Запуск на создание нового эталонного значения КЦ осуществляемого при старте ОС",
+    "job": {
+      "files": {
+        "count": "0",
+        "alias": []
+      },
+      "kwargs": {
+        "count": "0",
+        "alias": []
+      },
+      "handling": [
+        [
+          "Запуск_пересчёта_эталонной_БД_startup_counthash",
+          "/sbin/counthash -r startup."
+        ]
+      ]
+    },
+    "error": {
+      "handling": [
+        [
+          "Запуск_пересчёта_эталонной_БД_startup_counthash",
+          "echo 0"
+        ]
+      ]
+    }
+  },
+  "counthash_conf_update": {
+    "job": {
+      "help": "Обновление конфигурационного файла КЦ",
+      "files": {
+        "count": "1",
+        "alias": [
+          "aide_conf"
+        ]
+      },
+      "kwargs": {
+        "count": "0",
+        "alias": []
+      },
+      "handling": [
+        [
+          "Сохранение_предыдущего_файла_aide.conf",
+          "mv /var/lib/aide/sintez/aide.conf /var/lib/aide/sintez/aide.conf.old"
+        ],
+        [
+          "Обновление_файла_aide.conf",
+          "mv (*aide_conf*) /var/lib/aide/sintez/aide.conf"
+        ],
+        [
+          "Запуск_пересчёта_эталонной_БД_counthash",
+          "/sbin/counthash -r"
+        ],
+        [
+          "Удаление_предыдущего_файла_aide.conf",
+          "rm -rf /var/lib/aide/sintez/aide.conf.old"
+        ]
+      ]
+    },
+    "error": {
+      "handling": [
+        [
+          "Удаление_предыдущего_файла_aide.conf",
+          "echo 0"
+        ],
+        [
+          "Запуск_пересчёта_эталонной_БД_counthash",
+          "echo 0"
+        ],
+        [
+          "Обновление_файла_aide.conf",
+          "mv /var/lib/aide/sintez/aide.conf.old /var/lib/aide/sintez/aide.conf"
+        ],
+        [
+          "Сохранение_предыдущего_файла_aide.conf",
+          "echo 0"
+        ]
+      ]
+    }
+  },
   "test_job": {
-    "job":{
+    "job": {
       "files": {
         "count": "1",
-        "alias": ["log_txt_file"]
+        "alias": [
+          "log_txt_file"
+        ]
       },
       "kwargs": {
         "count": "1",
-        "alias": ["grep_filter"]
+        "alias": [
+          "grep_filter"
+        ]
       },
       "handling": [
-        ["step_0", "ps aux | grep (~grep_filter~) > (*log_txt_file*)"],
-        ["step_1", "echo -n 1 >> (*log_txt_file*)"],
-        ["step_2", "echo -n 2 >> (*log_txt_file*)"],
-        ["step_3", "false"],
-        ["step_4", "echo -n 4 >> (*log_txt_file*)"]
+        [
+          "step_0",
+          "ps aux | grep (~grep_filter~) > (*log_txt_file*)"
+        ],
+        [
+          "step_1",
+          "echo -n 1 >> (*log_txt_file*)"
+        ],
+        [
+          "step_2",
+          "echo -n 2 >> (*log_txt_file*)"
+        ],
+        [
+          "step_3",
+          "false"
+        ],
+        [
+          "step_4",
+          "echo -n 4 >> (*log_txt_file*)"
+        ]
       ]
     },
     "error": {
       "handling": [
-        ["step_4", "echo -n 4 >> (*log_txt_file*)"],
-        ["step_3", "echo -n 3 >> (*log_txt_file*)"],
-        ["step_2", "echo -n 2 >> (*log_txt_file*)"],
-        ["step_1", "echo -n 1 >> (*log_txt_file*)"],
-        ["step_0", "echo -n 0 >> (*log_txt_file*)"]
-      ]
-    }
-  },
-  "job_type": {
-    "job":{
-      "files": {
-        "count": "int",
-        "alias": ["my_file1", "my_file2", "my_file3"]
-      },
-      "kwargs": {
-        "count": "int",
-        "alias": ["my_kwarg1", "my_kwarg2"]
-      },
-      "handling": [
-        ["step_1", "полная консольная команда (~my_kwarg1~) (*my_file1*) (*my_file2*)"],
-        ["step_2", "полная консольная команда (~my_kwarg2~) (*my_file3*)"],
-        ["step_N", "любая команда без файлов, передается без файлов"]
-      ]
-    },
-    "error": {
-      "handling": [
-        ["step_N", "команда с которой нужно начать выполнение если посыпались на N-ом шаге можно с файлами"],
-        ["step_N-1", "команда с которой нужно начать выполнение если посыпались на N-1 ом шаге"],
-        ["step_1", "команда с которой нужно закончить выполнение или начать если ошибка была на 1-ом шаге"]
-      ]
-    }
-  },
-  "se_sub": {
-    "job":{
-      "files": {
-        "count": "2",
-        "alias": ["policy_pp", "se_linux_context_zip"]
-      },
-      "kwargs": {
-        "count": "1",
-        "alias": ["grep_filter"]
-      },
-      "handling": [
-        ["step_0", "semodule -i *policy_pp*"],
-        ["step_1", "запись файлов пользователей в каталог *se_linux_context_zip*"]
-      ]
-    },
-    "error": {
-      "handling": [
-        ["step_1", "удаление файлов пользователей из каталога *se_linux_context_zip*"],
-        ["step_0", "присутствует stick"]
-      ]
-    }
-  },
-  "se_obj_app": {
-    "job":{
-      "files": {
-        "count": "1",
-        "alias": ["policy_pp"]
-      },
-      "kwargs": {
-        "count": "1",
-        "alias": ["grep_filter"]
-      },
-      "handling": [
-        ["step_0", "semodule -i *policy_pp*"],
-        ["step_1", "restorecon -vR /"]
-
-      ]
-    },
-    "error": {
-      "handling": [
-        ["step_1", "Нужно переделать с корневой директории на конкретную переданную с СБ"],
-        ["step_0", ""]
-      ]
-    }
-  },
-  "se_obj_sfh": {
-    "job":{
-      "files": {
-        "count": "1",
-        "alias": ["policy_pp"]
-      },
-      "kwargs": {
-        "count": "1",
-        "alias": ["grep_filter"]
-      },
-      "handling": [
-        ["step_0", "semodule -i *policy_pp*"],
-        ["step_1", "restorecon -vR /"]
-      ]
-    },
-    "error": {
-      "handling": [
-        ["step_1", "Нужно переделать с корневой директории на конкретную переданную с СБ"],
-        ["step_0", ""]
-      ]
-    }
-  },
-  "se_obj_db": {
-    "job":{
-      "files": {
-        "count": "1",
-        "alias": ["sql_script"]
-      },
-      "kwargs": {
-        "count": "1",
-        "alias": ["grep_filter"]
-      },
-      "handling": [
-        ["step_0", "psql -U username -d data_base_name -a -f *sql_script*"]
-      ]
-    },
-    "error": {
-      "handling": [
-        ["step_0", "что нужно как то передать с СБ название БД (как вариант через костыль на баш)"]
-      ]
-    }
-  },
-  "se_per_app": {
-    "job":{
-      "files": {
-        "count": "1",
-        "alias": ["policy_pp"]
-      },
-      "kwargs": {
-        "count": "1",
-        "alias": ["grep_filter"]
-      },
-      "handling": [
-        ["step_0", "semodule -i *policy_pp*"]
-      ]
-    },
-    "error": {
-      "handling": [
-        ["step_0", ""]
-      ]
-    }
-  },
-  "se_per_sfh": {
-    "job":{
-      "files": {
-        "count": "1",
-        "alias": ["policy_pp"]
-      },
-      "kwargs": {
-        "count": "1",
-        "alias": ["grep_filter"]
-      },
-      "handling": [
-        ["step_0", "semodule -i *policy_pp*"]
-      ]
-    },
-    "error": {
-      "handling": [
-        ["step_0", ""]
-      ]
-    }
-  },
-  "se_per_db": {
-    "job":{
-      "files": {
-        "count": "1",
-        "alias": ["policy_pp"]
-      },
-      "kwargs": {
-        "count": "1",
-        "alias": ["grep_filter"]
-      },
-      "handling": [
-        ["step_0", "semodule -i *policy_pp*"]
-      ]
-    },
-    "error": {
-      "handling": [
-        ["step_0", ""]
-      ]
-    }
-  },
-  "psql_role": {
-    "job":{
-      "files": {
-        "count": "1",
-        "alias": ["sql_script"]
-      },
-      "kwargs": {
-        "count": "1",
-        "alias": ["grep_filter"]
-      },
-      "handling": [
-        ["step_0", "psql -U username -d bata_base_name -a -f *sql_script*"]
-      ]
-    },
-    "error": {
-      "handling": [
-        ["step_0", "что нужно как то передать с СБ название БД (как вариант через костыль на баш)"]
-      ]
-    }
-  },
-  "psql_grant": {
-    "job":{
-      "files": {
-        "count": "1",
-        "alias": ["sql_script"]
-      },
-      "kwargs": {
-        "count": "1",
-        "alias": ["grep_filter"]
-      },
-      "handling": [
-        ["step_0", "psql -U username -d myDataBase -a -f *sql_script*"]
-      ]
-    },
-    "error": {
-      "handling": [
-        ["step_0", "что нужно как то передать с СБ название БД (как вариант через костыль на баш)"]
-      ]
-    }
-  },
-  "psql_rls": {
-    "job":{
-      "files": {
-        "count": "1",
-        "alias": ["sql_script"]
-      },
-      "kwargs": {
-        "count": "1",
-        "alias": ["grep_filter"]
-      },
-      "handling": [
-        ["step_0", "psql -U username -d myDataBase -a -f *sql_script*"]
-      ]
-    },
-    "error": {
-      "handling": [
-        ["step_0", "что нужно как то передать с СБ название БД (как вариант через костыль на баш)"]
+        [
+          "step_4",
+          "echo -n 4 >> (*log_txt_file*)"
+        ],
+        [
+          "step_3",
+          "echo -n 3 >> (*log_txt_file*)"
+        ],
+        [
+          "step_2",
+          "echo -n 2 >> (*log_txt_file*)"
+        ],
+        [
+          "step_1",
+          "echo -n 1 >> (*log_txt_file*)"
+        ],
+        [
+          "step_0",
+          "echo -n 0 >> (*log_txt_file*)"
+        ]
       ]
     }
   }

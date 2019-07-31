@@ -1,16 +1,18 @@
 Name:		pszi-ab-dispatcher
 Version: 	0.1
-Release: 	2%{?dist}.sz
+Release: 	4%{?dist}.sz
 Summary: 	Диспетчер Агента Безопасности
 Group: 		common
 License: 	commercial
 URL:		http://www.fintech.ru
 Source0:	%{name}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
-Requires:	python-sz-daemon
+Requires:       python36 
+Requires:	python3-sz-daemon
 
 #%global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib;")
-%global python_sitelib /usr/lib/python2.7/site-packages
+#%global python_sitelib /usr/lib/python2.7/site-packages
+%global python_sitelib /usr/lib/python3.6/site-packages/
 
 %description
 Диспетчер Агента Безопасности + модуль консольного управления
@@ -68,9 +70,17 @@ echo "Применение файлов из пакета"
 
 %exclude %{python_sitelib}/ab_dispatcher/*.pyc
 %exclude %{python_sitelib}/ab_dispatcher/*.pyo
+%exclude %{python_sitelib}/ab_dispatcher/__pycache__/*.pyc
+%exclude %{python_sitelib}/ab_dispatcher/__pycache__/*.pyo
 
 %doc
 
 %changelog
+* Tue Jul 30 2019 Deyneko Aleksey <deyneko@fintech.ru> 0.1-4
+- Проект перенесён на python3.6
+
+* Mon Jul 29 2019 Deyneko Aleksey <deyneko@fintech.ru> 0.1-3
+- Добавлены именованные аргументы для команд
+
 * Tue Jun 18 2019 Deyneko Aleksey <deyneko@fintech.ru> 0.1-0
 - Первая версия
