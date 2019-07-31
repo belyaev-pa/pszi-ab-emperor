@@ -3,8 +3,8 @@ import os
 import sys
 import datetime
 import errno
-
-from job_handler import JobHandler, BaseDB
+from collections import namedtuple
+from base_db import BaseDB
 
 
 
@@ -16,210 +16,52 @@ SQLLITE_PATH = 'ab.sqlite3'
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 JOB_HANDLER_PID_FILE_PATH = '/var/run/ab_demon.pid'
 conf_dict = dict(
-    LOG_NAME=LOG_NAME,
-    DB_PATH=SQLLITE_PATH,
+    log_name=LOG_NAME,
+    sqlite3_db_path=SQLLITE_PATH,
     JOB_JSON_CONF_PATH='../share/handle_scheme.json',
     DATE_FORMAT=DATE_FORMAT,
     LOG_FILES_DIR='../test/',
     )
 
+class TestClass(BaseDB):
+    def __init__(self, conf_d):
+        super(TestClass, self).__init__(conf_d)
+        self.job_id = 'fc0390a2-eff3-4d05-a8ff-f3c17beb7424'
+        DBRow = namedtuple('DBRow', [
+            'job_id',
+            'status',
+            'error',
+            'step_number',
+            'arguments',
+            'kwargs',
+            'task_type',
+            'manager_type',
+            'completed_steps',
+            'date_start',
+            'date_finish'
+        ])
+        db_row = DBRow(job_id=self.job_id,
+                       status='1',
+                       error='0',
+                       step_number='step_1',
+                       arguments=str('Привет мир'),
+                       kwargs=str('Oración de la mañana'),
+                       task_type='123445апв',
+                       manager_type='dfgdfgvcbвапOración de la mañana',
+                       completed_steps='',
+                       date_start='',
+                       date_finish='', )
+        self.insert_into_table(db_row)
 
-def get_col_with_param_rows_len(col, param):
-    """
-    возвращает количество строк находящихся в БД в колонке col равно param
-    :param col: выбираемая колонка
-    :param param: параметр чем равна колонка
-    :return: int(кол-во строк)
-    """
-    db = BaseDB(conf_dict)
-    rows = db.select_db_row(col, param)
-    return len(rows)
-
-
-def get_job_id(status):
-    """
-    возвращает job_id одной единственной записи с переданным статусом
-
-    :param status: статус "completed"
-    :return: job_id
-    """
-    db = BaseDB(conf_dict)
-    return db.select_db_column('job_id', 'status', status)[0]['job_id']
-
-
-def get_job_manager_type(job_id):
-    """
-    возвращает manager_type строки с переданных job_id
-    :param job_id: айди задачи
-    :return: manager_type
-    """
-    db = BaseDB(conf_dict)
-    return db.select_db_column('manager_type', 'job_id', job_id)[0]['manager_type']
-
-
-def check_process_handling():
-    """
-    проверяет выполняется ли какая то задача на основе существования pid файла
-    и существует ли процесс с pid`ом из этого файла
-
-    ESRCH == Нет такого процесса
-    EPERM == Процесс не позволил узнать его статус (ошибка доступа)
-    EINVAL == Сбой в работе питона
-    существует всего три типа ошибки, по причине которых мы не сможем
-    узнать статус процесса: (EINVAL, EPERM, ESRCH) следовательно
-    мы никогда не должны прийти в ветку "else -> raise err"
-    если мы туда попали, что то реально пошло не так в самом питоне
-
-    :return: int(статус)
-    список статусов:
-    0 - файла нет, можно работать
-    1 - файл есть, процесс тоже есть, нужно подождать выолнения
-    2 - файл есть, процесса нет - необходимы дополнительные проверки
-    err - возвращаемая ошибка питона - если что то пошло не так
-    """
-    if os.path.isfile(JOB_HANDLER_PID_FILE_PATH):
-        with open(JOB_HANDLER_PID_FILE_PATH, 'r') as pid_file:
-            pid = pid_file.read().strip()
-        try:
-            os.kill(int(pid), 0)
-        except OSError as err:
-            if err.errno == errno.ESRCH:
-                return 2
-            elif err.errno == errno.EPERM:
-                return 1
-            else:
-                raise err
-        else:
-            return 1
-    else:
-        return 0
-
-
-def check_db_process_handling(job_id, task_type, arguments, manager_type):
-    """
-    проверяем выполнение процессов, на основании данных из БД
-    если существует файл, но процесса не существует:
-      проверяем есть ли в БД запись со "status" - "processing"
-      если есть - смотрим "manager_type" обекта
-        если "manager_type" == "net"
-          сотрим "job_id" и сравнимаем его с пришедшим на выполнение
-            если совпал - запускаем довыполнение
-            если нет, запускаем довыполнение, но возвращаем ошибку, чт опришел не тот job_id, но выполняем его
-
-    :param job_id: id задания
-    :param task_type: тип задачи
-    :param arguments: словарь аргументов, файлы и пути к ним
-    :param manager_type: тип вызвавшего менеджера локальный или по сети "local" или "net"
-    :return:
-    """
-    rows_len = get_col_with_param_rows_len("status", "processing")
-    if rows_len == 1:
-        if get_job_manager_type(job_id) == manager_type:
-            if job_id == get_job_id("processing"):
-                redo_regular_job(job_id)
-            else:
-                # TODO: подумать над необходимыми действиями
-                # довыполняем незаконченную задачу отбиваем лтпс обратчно, что бы он не
-                # убирал акк с сообщения и попробовал выполнить задачу позже
-                pass
-        else:
-            sys.exit("""Не могу продолжить выполнять поставленную задачу, 
-            так как она поставлена менеджером другого типа. Дождитесь ее выполнения""")
-    elif rows_len == 0:
-        print('Warning: был найден pid файл, но в БД нет ни одной невыполненной задачи')
-        # TODO: нужно где то проверить есть ли БД задача с таким job_id и посмотреть ее статус если есть
-        do_regular_job(job_id, task_type, arguments, manager_type)
-    else:
-        pass
-        # это случай, когда все пошло не так как задумывалось и
-        # БД появилось слишком много записей со статусом "processing"
-        # отбить ЛТПС подождать пока система попытается восстановиться
-        # нужно запустить отдельный процесс, который попытается все доделать
-
-
-def main(job_id, task_type, arguments, manager_type):
-    """
-    проверяем выполняется ли какая либо задача сейчас по пид файлу и процессу
-
-    дальше отбиваем, что уже что то выполняется возвращаем ошибку
-    + нужно где то добавить слип, что бы снова все это не пробывать сразу
-
-    если работа не выполняется, создаем в БД запись куда записываем
-    необходимую информацию для выполнения работы и создаем инстанс класса обработчика задач
-    формируем поле файлов для работы
-
-    пишем в БД:
-    job_id - входящая инфа
-    status - 'processing'
-    step_number - 'step_1'
-    arguments - входящая инфа
-    task_type - входящая инфа
-    manager_type - net или local
-    completed_steps - ''
-    date_start - datetime.datetime.now().strftime(DATE_FORMAT)
-    date_finish - ''
-
-    :param job_id: id задания
-    :param task_type: тип задачи
-    :param arguments: словарь аргументов, файлы и пути к ним
-    :param manager_type: тип вызвавшего менеджера локальный или по сети "local" или "net"
-    :return: void
-    """
-    stat = check_process_handling()
-    if stat == 1:
-        sys.exit('Обработчик уже занят выполнением задачи, асинхронное выполнение запрещено, подождите')
-    elif stat == 0:
-        if get_col_with_param_rows_len('job_id', job_id) > 0:
-            check_db_process_handling(job_id, task_type, arguments, manager_type)
-        else:
-            do_regular_job(job_id, task_type, arguments, manager_type)
-    elif stat == 2:
-        check_db_process_handling(job_id, task_type, arguments, manager_type)
-    else:
-        sys.exit('все в говне питон упал')
-
-
-def do_regular_job(job_id, task_type, arguments, manager_type):
-    """
-    выполнение работы в нормальных условия, когда записи с таким айди нет,
-    создает новую запись в БД и запускает работу @job_id
-    :param job_id: id задания
-    :param task_type: тип задачи
-    :param arguments: словарь аргументов, файлы и пути к ним
-    :param manager_type: тип вызвавшего менеджера локальный или по сети "local" или "net"
-    :return: void
-    """
-
-    db = BaseDB(conf_dict)
-    insert_tuple = (job_id, 'processing', 0, 'step_1',
-                    ' '.join(map(str, arguments)),
-                    task_type, manager_type, '',
-                    datetime.datetime.now().strftime(DATE_FORMAT), '',)
-    db.insert_into_table(insert_tuple)
-    with JobHandler(job_id, conf_dict) as job:
-        job.run_job()
-
-
-def redo_regular_job(job_id):
-    """
-    запускает выполнение задачи с заданным job_id
-    :param job_id:
-    :return:
-    """
-    with JobHandler(job_id, conf_dict) as job:
-        job.run_job()
-
+    def test(self):
+        self.update_db_column('step_number',
+                              'Пиздец',
+                              'arguments',
+                              'Привет мир')
+        print(self.select_db_column('task_type', 'job_id', self.job_id)[0]['task_type'])
+        print(self.select_db_row('kwargs', 'Oración de la mañana'))
 
 if __name__ == '__main__':
-    # print('выполняем работу с аргументами: {}'.format(sys.argv))
-    # job_type = sys.argv[1] or None
-    # job_id = sys.argv[2] or None
-    # if job_id is None:
-    #     sys.exit('не передан job_id')
-    # if job_type is None:
-    #     sys.exit('не передан job_type для выполнения')
-    # sys.argv[3:]
-    job_id = '12345678999'
-    job_type = 'test_job'
-    main(job_id, job_type, ['log_txt_file=/home/pavel/test_log.txt'], 'net')
+    t = TestClass(conf_dict)
+    t.test()
 

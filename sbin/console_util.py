@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python36
 # -*- coding: utf-8 -*-
 
 import argparse
@@ -72,10 +72,10 @@ if __name__ == '__main__':
     spinner.start()
     answer_received = ''
     try:
-        sock.sendall(message + '\r\n\r\n')
+        sock.sendall(str(message + '\r\n\r\n').encode('utf8'))
         while not answer_received.endswith('\r\n\r\n'):
             data = sock.recv(32)
-            answer_received += data
+            answer_received += data.decode()
     finally:
         done.set()
         spinner.join()

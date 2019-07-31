@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import ConfigParser
+import configparser
 import sqlite3
 import json
 import os
@@ -15,7 +15,7 @@ def parse_conf(conf_file_path):
     :param conf_file_path: путь до файла
     :return: сформированный словарь настроек
     """
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read(conf_file_path)
     config_dict = dict()
     for section in config.sections():
@@ -105,7 +105,7 @@ def validate_job(job_type, args, json_path, validate_type):
 
 def conf_view(conf_path):
     print('Список параметров конфигурационного файла:')
-    for k, v in parse_conf(conf_path).iteritems():
+    for k, v in parse_conf(conf_path).items():
         print('{} = {}'.format(k, v))
 
 

@@ -2,7 +2,6 @@
 import sqlite3
 import syslog
 import sys
-from datetime import datetime
 
 
 def dict_factory(cursor, row):
@@ -143,6 +142,7 @@ class BaseDB(object):
 
     def check_table_or_create(self):
         c = self.conn.cursor()
+        c.execute('PRAGMA encoding="UTF-8";')
         c.execute("""            
                         CREATE TABLE IF NOT EXISTS ab_tasks (
                         'id'              INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,

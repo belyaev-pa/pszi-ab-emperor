@@ -65,9 +65,9 @@ class JobHandler(BaseDB):
             self.write_log(msg)
             return self.log_file_path
 
-        for step_number, cmd in self.dict_steps.iteritems():
+        for step_number, cmd in self.dict_steps.items():
             if step_number not in self.completed_step:
-                if self.job_handler(step_number, self.dict_steps):
+                if self.job_handler(step_number, self.dict_steps) == 1:
                     self.job_handling_error = True
                     msg = "Команда '{}' завершилась не успешно, пытаемся восстановиться\n".format(cmd)
                     self.write_log(msg)
@@ -111,13 +111,12 @@ class JobHandler(BaseDB):
         process = subprocess.Popen(new_cmd,
                                    shell=True,
                                    stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT)
-        for line in iter(process.stdout.readline, b''):
-            print(line.strip())
-        return process.wait()
-        # TODO: write this into log
-        # for line in iter(process.stdout.readline, b''):
-        #     print(line.strip())
+                                   stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+        self.write_log(stdout.decode('utf8'))
+        self.write_log(stderr.decode('utf8'))
+        self.write_log('return code = {}'.format(process.returncode))
+        return process.returncode
 
     def get_completed_steps(self):
         completed_steps = self.select_db_column('completed_steps', 'job_id', self.job_id)[0]['completed_steps']
@@ -126,9 +125,10 @@ class JobHandler(BaseDB):
     @staticmethod
     def check_pattern(cmd_str, raw_pattern):
         """
-        проверяет регуляркой есть ли в строке cmd {*}
+        проверяет регуляркой есть ли паттерн в строке cmd
 
         :param cmd_str: вызываемая командная строка
+        :param raw_pattern: паттер регулярки
         :return: bool
         """
         pattern = re.compile(raw_pattern)
@@ -142,7 +142,7 @@ class JobHandler(BaseDB):
         """
         job_dict = dict()
         job_dict_string = self.select_db_column(db_field, 'job_id', self.job_id)[0][db_field]
-        if job_dict_string:
+        if job_dict_string is not None and job_dict_string != 'None' and job_dict_string:
             syslog.syslog(syslog.LOG_DEBUG, 'make_jo_{}_dict ... {}'.format(db_field, job_dict_string))
             for obj in job_dict_string.split():
                 syslog.syslog(syslog.LOG_DEBUG, 'obj = {}'.format(obj))
@@ -153,7 +153,8 @@ class JobHandler(BaseDB):
 
     @property
     def get_job_handling_error(self):
-        return self.select_db_column('error', 'job_id', self.job_id)[0]['error']
+        res = self.select_db_column('error', 'job_id', self.job_id)[0]['error']
+        return False if int(res) == 0 else True
 
     @property
     def get_job_type(self):
@@ -201,7 +202,7 @@ class JobHandler(BaseDB):
             self.write_log(msg)
             return self.log_file_path
             # raise WrongJsonFormatException()
-        for step_number, cmd in recovery_dict.iteritems():
+        for step_number, cmd in recovery_dict.items():
             if step_number in self.completed_step:
                 if self.job_handler(step_number, recovery_dict):
                     msg = "{} Команда восстановления '{}' завершилась не успешно\n".format(cmd, datetime.now())

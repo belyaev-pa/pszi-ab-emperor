@@ -61,12 +61,12 @@ class ABSocketListener(BaseDB):
                     log_path = os.path.join(self.get_settings('log_files_dir'), conf['job_id'] + '.log')
                     if self.select_db_row('job_id', conf['job_id']):
                         if os.path.isfile(log_path):
-                            self.socket_conn.sendall(log_path + '\r\n\r\n')
+                            self.socket_conn.sendall(str(log_path + '\r\n\r\n').encode('utf8'))
                         else:
-                            self.socket_conn.sendall('\r\n\r\n')
+                            self.socket_conn.sendall('\r\n\r\n'.encode('utf8'))
                     else:
                         self.prepare_job(conf)
-                        self.socket_conn.sendall(log_path + '\r\n\r\n')
+                        self.socket_conn.sendall(str(log_path + '\r\n\r\n').encode('utf8'))
                     break
 
     def prepare_job(self, sock_msg):
@@ -92,8 +92,8 @@ class ABSocketListener(BaseDB):
                        status=1,
                        error=0,
                        step_number='step_1',
-                       arguments=''.join(map(str, sock_msg['arguments'])),
-                       kwargs=''.join(map(str, sock_msg['kwargs'])),
+                       arguments=str(sock_msg['arguments']),
+                       kwargs=str(sock_msg['kwargs']),
                        task_type=sock_msg['job_type'],
                        manager_type=sock_msg['manager_type'],
                        completed_steps='',
