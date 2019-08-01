@@ -75,7 +75,7 @@ if __name__ == '__main__':
         sock.sendall(str(message + '\r\n\r\n').encode('utf8'))
         while not answer_received.endswith('\r\n\r\n'):
             data = sock.recv(32)
-            answer_received += data.decode()
+            answer_received += data.decode('utf8')
     finally:
         done.set()
         spinner.join()
